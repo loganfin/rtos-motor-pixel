@@ -65,7 +65,14 @@ target_include_directories(freertos PUBLIC
     ${PICO_SDK_FREERTOS_SOURCE}/portable/GCC/ARM_CM0
     )
 
-add_executable(${CMAKE_PROJECT_NAME} src/main.c)
+add_executable(${CMAKE_PROJECT_NAME}
+    src/main.c
+    src/buttons.c
+    src/hdc1080.c
+    src/interrupts.c
+    src/seg_display.c
+    src/stepper.c
+    )
 
 pico_enable_stdio_usb(${CMAKE_PROJECT_NAME} 1)
 pico_enable_stdio_uart(${CMAKE_PROJECT_NAME} 0)

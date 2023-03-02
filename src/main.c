@@ -1,3 +1,9 @@
+#include "buttons.h"
+#include "hdc1080.h"
+#include "interrupts.h"
+#include "seg_display.h"
+#include "stepper.h"
+
 #include <FreeRTOS.h>
 #include <task.h>
 #include <stdio.h>
@@ -7,4 +13,10 @@
 
 int main()
 {
+    stdio_init_all();
+
+    buttons_init();
+    hdc1080_init();
+    seg_display_init();
+    stepper_init();
 }
