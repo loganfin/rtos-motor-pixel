@@ -15,7 +15,7 @@ int main()
 {
     stdio_init_all();
 
-    buttons_init();
+    interrupts_init();
     hdc1080_init();
     seg_display_init();
     stepper_init();
