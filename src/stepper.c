@@ -1,3 +1,7 @@
+/*
+ * This is the implementation for the 28BYJ-48 stepper motor drivers.
+ */
+
 #include "stepper.h"
 
 #include <FreeRTOS.h>
@@ -7,7 +11,7 @@
 const uint stepper_coil_1_pin = 6;
 const uint stepper_coil_2_pin = 0;
 const uint stepper_coil_3_pin = 1;
-const uint stepper_coil_4_pin = 13;
+const uint stepper_coil_4_pin = 12;
 const uint stepper_rev_steps  = 524;    // approximate
 
 // initialize all of the necessary pins
@@ -24,7 +28,7 @@ void stepper_init()
     gpio_set_dir(stepper_coil_4_pin, GPIO_OUT);
 }
 
-// spin the motor one step per call in either direction
+// spin the motor one step per call in the specified direction
 void stepper_step(uint steps, bool clockwise)
 {
     TickType_t delay = 1;      // delay for one tick
