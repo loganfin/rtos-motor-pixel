@@ -12,7 +12,7 @@ void buttons_init()
     gpio_init(button_2_pin);
     gpio_init(button_3_pin);
 
-    gpio_set_dir(button_1_pin, GPIO_OUT);
-    gpio_set_dir(button_2_pin, GPIO_OUT);
-    gpio_set_dir(button_3_pin, GPIO_OUT);
+    gpio_set_dir(button_1_pin, GPIO_IN);
+    gpio_set_dir(button_2_pin, GPIO_IN);
+    gpio_set_dir(button_3_pin, GPIO_IN);
 }
