@@ -72,6 +72,7 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/interrupts.c
     src/seg_display.c
     src/stepper.c
+    src/tasks.c
     )
 
 pico_enable_stdio_usb(${CMAKE_PROJECT_NAME} 1)
