@@ -2,8 +2,8 @@
 
 #include "pico/stdlib.h"
 
-extern const uint button_1_pin;
-extern const uint button_2_pin;
-extern const uint button_3_pin;
+extern const uint buttons_s1_pin;
+extern const uint buttons_s2_pin;
+extern const uint buttons_s3_pin;
 
 void buttons_init();
