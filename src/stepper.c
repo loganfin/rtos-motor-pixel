@@ -1,5 +1,5 @@
 /*
- * This is the implementation for the 28BYJ-48 stepper motor drivers.
+ * This is the implementation for the 28BYJ-48 stepper motor tasks and drivers.
  */
 
 #include "stepper.h"
@@ -14,6 +14,7 @@ const uint stepper_coil_3_pin = 1;
 const uint stepper_coil_4_pin = 12;
 const uint stepper_rev_steps  = 524;    // approximate
 
+/* Stepper Motor Drivers */
 // initialize all of the necessary pins
 void stepper_init()
 {
@@ -79,4 +80,12 @@ void stepper_step(uint steps, bool clockwise)
 void stepper_rev(bool clockwise)
 {
     stepper_step(stepper_rev_steps, clockwise);
+}
+
+/* FreeRTOS Tasks */
+void vMotor()
+{
+    while(true) {
+        stepper_rev(true);
+    }
 }

@@ -2,7 +2,6 @@
 #include "hdc1080.h"
 #include "seg_display.h"
 #include "stepper.h"
-#include "tasks.h"
 
 #include <FreeRTOS.h>
 #include <task.h>

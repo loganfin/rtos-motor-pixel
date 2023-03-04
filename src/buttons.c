@@ -1,5 +1,11 @@
+/*
+ * This is the implementation of the ISR attached to the buttons along
+ * with the tasks that are triggered by the ISR.
+ */
 #include "buttons.h"
 
+#include <FreeRTOS.h>
+#include <task.h>
 #include "pico/stdlib.h"
 #include <stdio.h>
 
@@ -18,10 +24,9 @@ void buttons_init()
     gpio_set_dir(buttons_s2_pin, GPIO_IN);
     gpio_set_dir(buttons_s3_pin, GPIO_IN);
 
-    // set up irq response
-    gpio_set_irq_enabled_with_callback(buttons_s1_pin, GPIO_IRQ_EDGE_FALL, 1, isr_buttons);
-    gpio_set_irq_enabled(buttons_s2_pin, GPIO_IRQ_EDGE_FALL, 1);
-    gpio_set_irq_enabled(buttons_s3_pin, GPIO_IRQ_EDGE_FALL, 1);
+    gpio_set_irq_enabled_with_callback(buttons_s1_pin, GPIO_IRQ_EDGE_RISE, 1, isr_buttons);
+    gpio_set_irq_enabled(buttons_s2_pin, GPIO_IRQ_EDGE_RISE, 1);
+    gpio_set_irq_enabled(buttons_s3_pin, GPIO_IRQ_EDGE_RISE, 1);
 }
 
 void isr_buttons(uint gpio, uint32_t events)
@@ -37,4 +42,17 @@ void isr_buttons(uint gpio, uint32_t events)
             printf("Interrupt occurred at pin %d with event %d\n", buttons_s3_pin, events);
             break;
     }
+}
+
+/* FreeRTOS Tasks */
+void vButton1()
+{
+}
+
+void vButton2()
+{
+}
+
+void vButton3()
+{
 }
