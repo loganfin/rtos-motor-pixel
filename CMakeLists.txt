@@ -69,7 +69,6 @@ add_executable(${CMAKE_PROJECT_NAME}
     src/main.c
     src/buttons.c
     src/hdc1080.c
-    src/interrupts.c
     src/seg_display.c
     src/stepper.c
     src/tasks.c
