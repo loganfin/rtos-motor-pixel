@@ -17,7 +17,10 @@ int main()
     seg_display_init(); // initialize all pins that are connected to the seven segement display
     stepper_init();     // initialize the pins connected to the four coils on the stepper motor
 
-    xTaskCreate(vMotor, "MotorTask", 256, NULL, 5, NULL);
+    xTaskCreate(vMotor, "MotorTask", 256, NULL, 3, NULL);
+    xTaskCreate(vButton1, "Button1Task", 256, NULL, 4, NULL);
+    xTaskCreate(vButton2, "Button1Task", 256, NULL, 4, NULL);
+    xTaskCreate(vButton3, "Button1Task", 256, NULL, 4, NULL);
     vTaskStartScheduler();
 
     while (true) {
