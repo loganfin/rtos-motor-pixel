@@ -1,19 +1,19 @@
 #pragma once
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
 #include "pico/stdlib.h"
 
-extern const uint seg_display_cc1_pin;
-extern const uint seg_display_cc2_pin;
-extern const uint seg_display_cc_assert;
+extern const uint seg_display_left;
+extern const uint seg_display_right;
 
-extern const uint seg_display_a_pin;
-extern const uint seg_display_b_pin;
-extern const uint seg_display_c_pin;
-extern const uint seg_display_d_pin;
-extern const uint seg_display_e_pin;
-extern const uint seg_display_f_pin;
-extern const uint seg_display_g_pin;
-extern const uint seg_display_dp_pin;
-extern const uint seg_display_led_assert;
+extern QueueHandle_t xQControl;
 
 void seg_display_init();
+void seg_display_digit(uint display, uint8_t digit);
+
+/* FreeRTOS Tasks */
+void vDisplayManager();
+void vLeftDisplay();
+void vRightDisplay();
