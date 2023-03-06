@@ -18,9 +18,9 @@ int main()
     stepper_init();     // initialize the pins connected to the four coils on the stepper motor
 
     //xTaskCreate(vMotor, "MotorTask", 256, NULL, 3, NULL);
-    //xTaskCreate(vButton1, "Button1Task", 256, NULL, 4, NULL);
-    //xTaskCreate(vButton2, "Button2Task", 256, NULL, 4, NULL);
-    //xTaskCreate(vButton3, "Button3Task", 256, NULL, 4, NULL);
+    xTaskCreate(vButton1, "Button1Task", 256, NULL, 4, NULL);
+    xTaskCreate(vButton2, "Button2Task", 256, NULL, 4, NULL);
+    xTaskCreate(vButton3, "Button3Task", 256, NULL, 4, NULL);
     xTaskCreate(vDisplayManager, "DisplayManagerTask", 256, NULL, 3, NULL);
     xTaskCreate(vLeftDisplay, "LeftDisplayTask", 256, NULL, 3, NULL);
     xTaskCreate(vRightDisplay, "RightDisplayTask", 256, NULL, 3, NULL);

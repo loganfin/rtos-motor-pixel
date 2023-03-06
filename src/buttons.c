@@ -3,7 +3,7 @@
  * with the tasks that are triggered by the ISR.
  */
 #include "buttons.h"
-#include "FreeRTOSConfig.h"
+#include "seg_display.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -65,26 +65,13 @@ void vButton1()
     TickType_t input_frame = 2 * configTICK_RATE_HZ;
     TickType_t start = 0;
     TickType_t end = 0;
+    uint16_t control_queue_message = 0;
     vSemaphoreCreateBinary(xButton1Semaphore);
 
     while(true) {
-        // debounce
-        // if the first press, start the timer
-        // increment count
-        // if end < time, try and take the semaphore again
-        // else if end > time, switch statement to handlers
-
-        // if the timer is started, don't block on semaphore
-
-        //  if the timer is started:
-        //      try to take the semaphore without blocking
-        //  if the timer is not started:
-        //      block on semaphore
-
-
         if (start != 0) {
             end = xTaskGetTickCount() - start;
-            if (xSemaphoreTake(xButton1Semaphore, 0) == pdTRUE) {
+            if (xSemaphoreTake(xButton1Semaphore, 1) == pdTRUE) {
                 // debounce
                 vTaskDelay(buttons_debounce_delay);
                 xSemaphoreTake(xButton1Semaphore, 0);
@@ -112,27 +99,33 @@ void vButton1()
 
         // maybe move this above the button handler?
         if (end > input_frame) {
-            start = 0;
-            end = 0;
-
             switch (count) {
                 case 1:
                     printf("case 1 press. actual press %d\n", count);
+                    control_queue_message = 1;
                     break;
                 case 2:
                     printf("case 2 press. actual press %d\n", count);
+                    control_queue_message = 2;
                     break;
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
+                    control_queue_message = 3;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
+                    control_queue_message = 4;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
+                    control_queue_message = 18;
                     break;
             }
+            control_queue_message = count;
+            start = 0;
+            end = 0;
             count = 0;
+            xQueueSendToBack(xQControl, &control_queue_message, 0);
         }
     }
 }
@@ -143,33 +136,66 @@ void vButton2()
     TickType_t input_frame = 2 * configTICK_RATE_HZ;
     TickType_t start = 0;
     TickType_t end = 0;
+    uint16_t control_queue_message = 0;
     vSemaphoreCreateBinary(xButton2Semaphore);
 
     while(true) {
-        /*
-         * On button press:
-         * give semaphore
-         *
-         * increment count
-         */
-        if (xSemaphoreTake(xButton2Semaphore, portMAX_DELAY) == pdTRUE) {
-            // debounce the button
-            vTaskDelay(buttons_debounce_delay);
-            xSemaphoreTake(xButton2Semaphore, 0);
-
-            // count the number of button presses within 2 seconds
-            // what happens if the button is pressed within 2 seconds of startup?
+        if (start != 0) {
             end = xTaskGetTickCount() - start;
-            if (end > input_frame) {
-                start = xTaskGetTickCount();
-                count = 0;
-            }
-            count++;
+            if (xSemaphoreTake(xButton2Semaphore, 1) == pdTRUE) {
+                // debounce
+                vTaskDelay(buttons_debounce_delay);
+                xSemaphoreTake(xButton2Semaphore, 0);
 
-            printf("button s2 has been pressed %d times\n", count);
-            printf("start tick: %d\n", start);
-            printf("end tick: %d\n", end);
-            printf("input_frame tick: %d\n\n", input_frame);
+                // check the current count
+                if (count == 0) {
+                    start = xTaskGetTickCount();
+                }
+                count++;
+            }
+        }
+        else if (start == 0) {
+            if (xSemaphoreTake(xButton2Semaphore, portMAX_DELAY) == pdTRUE) {
+                // debounce
+                vTaskDelay(buttons_debounce_delay);
+                xSemaphoreTake(xButton2Semaphore, 0);
+
+                // check the current count
+                if (count == 0) {
+                    start = xTaskGetTickCount();
+                }
+                count++;
+            }
+        }
+
+        // maybe move this above the button handler?
+        if (end > input_frame) {
+            switch (count) {
+                case 1:
+                    printf("case 1 press. actual press %d\n", count);
+                    control_queue_message = 10;
+                    break;
+                case 2:
+                    printf("case 2 press. actual press %d\n", count);
+                    control_queue_message = 20;
+                    break;
+                case 3:
+                    printf("case 3 press. actual press %d\n", count);
+                    control_queue_message = 30;
+                    break;
+                case 4:
+                    printf("case 4 press. actual press %d\n", count);
+                    control_queue_message = 40;
+                    break;
+                default:
+                    printf("case default press. actual press %d\n", count);
+                    control_queue_message = 50;
+                    break;
+            }
+            start = 0;
+            end = 0;
+            count = 0;
+            xQueueSendToBack(xQControl, &control_queue_message, 0);
         }
     }
 }
@@ -180,34 +206,66 @@ void vButton3()
     TickType_t input_frame = 2 * configTICK_RATE_HZ;
     TickType_t start = 0;
     TickType_t end = 0;
+    uint16_t control_queue_message = 0;
     vSemaphoreCreateBinary(xButton3Semaphore);
 
     while(true) {
-        if (xSemaphoreTake(xButton3Semaphore, portMAX_DELAY) == pdTRUE) {
-            /*
-               if (end > input_frame) {
-               start = xTaskGetTickCount();
-               end = start;
-               count = 0;
-               }
-               */
-
-            vTaskDelay(buttons_debounce_delay);
-            xSemaphoreTake(xButton2Semaphore, 0);
-            count++;
-
+        if (start != 0) {
             end = xTaskGetTickCount() - start;
-            if (end > input_frame) {
-                start = xTaskGetTickCount();
-                end = start;
-                count = 0;
-                continue;
-            }
+            if (xSemaphoreTake(xButton3Semaphore, 1) == pdTRUE) {
+                // debounce
+                vTaskDelay(buttons_debounce_delay);
+                xSemaphoreTake(xButton3Semaphore, 0);
 
-            printf("button s2 has been pressed %d times\n", count);
-            printf("start tick: %d\n", start);
-            printf("end tick: %d\n", end);
-            printf("input_frame tick: %d\n\n", input_frame);
+                // check the current count
+                if (count == 0) {
+                    start = xTaskGetTickCount();
+                }
+                count++;
+            }
+        }
+        else if (start == 0) {
+            if (xSemaphoreTake(xButton3Semaphore, portMAX_DELAY) == pdTRUE) {
+                // debounce
+                vTaskDelay(buttons_debounce_delay);
+                xSemaphoreTake(xButton3Semaphore, 0);
+
+                // check the current count
+                if (count == 0) {
+                    start = xTaskGetTickCount();
+                }
+                count++;
+            }
+        }
+
+        // maybe move this above the button handler?
+        if (end > input_frame) {
+            switch (count) {
+                case 1:
+                    printf("case 1 press. actual press %d\n", count);
+                    control_queue_message = 11;
+                    break;
+                case 2:
+                    printf("case 2 press. actual press %d\n", count);
+                    control_queue_message = 22;
+                    break;
+                case 3:
+                    printf("case 3 press. actual press %d\n", count);
+                    control_queue_message = 33;
+                    break;
+                case 4:
+                    printf("case 4 press. actual press %d\n", count);
+                    control_queue_message = 44;
+                    break;
+                default:
+                    printf("case default press. actual press %d\n", count);
+                    control_queue_message = 55;
+                    break;
+            }
+            start = 0;
+            end = 0;
+            count = 0;
+            xQueueSendToBack(xQControl, &control_queue_message, 0);
         }
     }
 }
