@@ -33,10 +33,6 @@ void buttons_init()
     gpio_set_irq_enabled_with_callback(buttons_s1_pin, GPIO_IRQ_EDGE_RISE, 1, isr_buttons);
     gpio_set_irq_enabled(buttons_s2_pin, GPIO_IRQ_EDGE_RISE, 1);
     gpio_set_irq_enabled(buttons_s3_pin, GPIO_IRQ_EDGE_RISE, 1);
-
-    gpio_init(20);
-    gpio_set_dir(20, GPIO_OUT);
-    gpio_put(20, 1);
 }
 
 void isr_buttons(uint gpio, uint32_t events)
@@ -66,7 +62,7 @@ void vButton1()
     TickType_t start = 0;
     TickType_t end = 0;
     uint16_t control_queue_message = 0;
-    vSemaphoreCreateBinary(xButton1Semaphore);
+    xButton1Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
         if (start != 0) {
@@ -110,22 +106,23 @@ void vButton1()
                     break;
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
-                    control_queue_message = 3;
+                    // display "EE"
+                    control_queue_message = 0x0E00;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
-                    control_queue_message = 4;
+                    // toggle display between hex and decimal
+                    control_queue_message = 0x1000;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
                     control_queue_message = 18;
                     break;
             }
-            control_queue_message = count;
+            xQueueSendToBack(xQControl, &control_queue_message, 0);
             start = 0;
             end = 0;
             count = 0;
-            xQueueSendToBack(xQControl, &control_queue_message, 0);
         }
     }
 }
@@ -137,7 +134,7 @@ void vButton2()
     TickType_t start = 0;
     TickType_t end = 0;
     uint16_t control_queue_message = 0;
-    vSemaphoreCreateBinary(xButton2Semaphore);
+    xButton2Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
         if (start != 0) {
@@ -207,7 +204,7 @@ void vButton3()
     TickType_t start = 0;
     TickType_t end = 0;
     uint16_t control_queue_message = 0;
-    vSemaphoreCreateBinary(xButton3Semaphore);
+    xButton3Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
         if (start != 0) {

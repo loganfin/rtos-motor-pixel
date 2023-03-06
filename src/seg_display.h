@@ -12,6 +12,7 @@ extern QueueHandle_t xQControl;
 
 void seg_display_init();
 void seg_display_digit(uint display, uint8_t digit);
+void seg_display_off();
 
 /* FreeRTOS Tasks */
 void vDisplayManager();

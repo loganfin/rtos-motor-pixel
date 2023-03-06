@@ -5,6 +5,7 @@
 #include <queue.h>
 #include <semphr.h>
 #include "pico/stdlib.h"
+#include <stdio.h>
 
 const uint seg_display_cc1_pin    = 11;
 const uint seg_display_cc2_pin    = 10;
@@ -25,6 +26,47 @@ QueueHandle_t xQControl;
 QueueHandle_t xQLeftDisp;
 QueueHandle_t xQRightDisp;
 SemaphoreHandle_t xSemDisp;
+
+enum {
+    DISP_ZERO  = 0,
+    DISP_ONE   = 1,
+    DISP_TWO   = 2,
+    DISP_THREE = 3,
+    DISP_FOUR  = 4,
+    DISP_FIVE  = 5,
+    DISP_SIX   = 6,
+    DISP_SEVEN = 7,
+    DISP_EIGHT = 8,
+    DISP_NINE  = 9,
+    DISP_A     = 10,
+    DISP_b     = 11,
+    DISP_C     = 12,
+    DISP_d     = 13,
+    DISP_E     = 14,
+    DISP_F     = 15,
+    DISP_h     = 16,
+    DISP_NUM   = 17,
+};
+
+uint8_t seg_display_num[DISP_NUM] = {
+    0b00111111, // 0x3F 0
+    0b00000110, // 0x06 1
+    0b01011011, // 0x5B 2
+    0b01001111, // 0x4F 3
+    0b01100110, // 0x66 4
+    0b01101101, // 0x6D 5
+    0b01111101, // 0x7D 6
+    0b00000111, // 0x07 7
+    0b01111111, // 0x7F 8
+    0b01100111, // 0x67 9
+    0b01110111, // 0x77 A
+    0b01111100, // 0x7C b
+    0b00111001, // 0x39 C
+    0b01011110, // 0xE5 d
+    0b01111001, // 0x79 E
+    0b01110001, // 0x71 F
+    0b01110100, // 0x74 h
+};
 
 /* Seven Segment Display Drivers */
 
@@ -111,24 +153,85 @@ void seg_display_digit(uint display, uint8_t digit)
     }
 }
 
+void seg_display_off()
+{
+    seg_display_digit(seg_display_left, 0);
+    seg_display_digit(seg_display_right, 0);
+}
+
 /* FreeRTOS Tasks */
 
 void vDisplayManager()
 {
-    uint8_t rx_data    = 0;
-    uint8_t left_digit  = 0x3f; // display zero
-    uint8_t right_digit = 0x3f; // display zero
+    uint16_t rx_data     = 0;
+    uint8_t left_digit   = 0;
+    uint8_t right_digit  = 0;
+    uint8_t display_mode = 0;
+    bool hexadecimal     = false;
 
-    xQControl = xQueueCreate(11, sizeof(uint16_t));
-    xQLeftDisp = xQueueCreate(1, sizeof(uint8_t));
+    xQControl   = xQueueCreate(11, sizeof(uint16_t));
+    xQLeftDisp  = xQueueCreate(1, sizeof(uint8_t));
     xQRightDisp = xQueueCreate(1, sizeof(uint8_t));
-    xSemDisp = xSemaphoreCreateBinary();
+    xSemDisp    = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemDisp);
 
     while(true) {
         // check if queue is full
+        if (uxQueueSpacesAvailable(xQControl) == 0) {
+            left_digit = seg_display_num[DISP_ZERO];
+            right_digit = seg_display_num[DISP_F];
+        }
         // receive the data
-        // separate data into two digits
+        else if (xQueueReceive(xQControl, &rx_data, 0)) {
+            // get the duration time
+            // xQueueReceive(xQControl, &duration, 0) {}
+            // either a number or a stepper motor status
+            // perhaps stepper motor should have msb set
+            // 1000 0000 0000 0000 = clockwise
+            // 1100 0000 0000 0000 = counter clockwise
+            //
+            // rx_data = 98;
+            // left_digit = seg_display_9_digit;
+            // right_digit = seg_display_8_digit;
+            //
+            // 9 = seg_display_9_digit;
+            // left_digit = seg_display_num[seg_display_9_digit];
+            //
+            // left_digit = seg_display_num[rx_data >> 8];
+            // right_digit = seg_display_num[rx_data & 0x00FF];
+            //
+            // separate data into two digits
+            switch (rx_data) {
+                case 0x0E00: // E
+                    left_digit = seg_display_num[DISP_E];
+                    right_digit = left_digit;
+                    break;
+                case 0x1000: // g
+                    hexadecimal = !hexadecimal;
+                    if (hexadecimal) {
+                        left_digit = seg_display_num[DISP_h];
+                        right_digit = left_digit;
+                    }
+                    else {
+                        left_digit = seg_display_num[DISP_d];
+                        right_digit = left_digit;
+                    }
+                case 'M':
+                    break;
+                default:
+                    if (hexadecimal) {
+                        left_digit = seg_display_num[rx_data / 16];
+                        right_digit = seg_display_num[rx_data % 16];
+                    }
+                    else {
+                        left_digit = seg_display_num[rx_data / 10];
+                        right_digit = seg_display_num[rx_data % 10];
+                    }
+                    break;
+            }
+            printf("rx_data: %d\n", rx_data);
+        }
+
         // send left digit byte to xQLeftDisp
         xQueueSendToBack(xQLeftDisp, &left_digit, 0);
         // send right digit byte to xQRightDisp
@@ -147,6 +250,8 @@ void vLeftDisplay()
             seg_display_digit(seg_display_left, digit);
             xSemaphoreGive(xSemDisp);
         }
+        //printf("Left\n");
+        //vTaskDelay(1 * configTICK_RATE_HZ);
         taskYIELD();
     }
 }
@@ -161,6 +266,8 @@ void vRightDisplay()
             seg_display_digit(seg_display_right, digit);
             xSemaphoreGive(xSemDisp);
         }
+        //printf("Right\n");
+        //vTaskDelay(1 * configTICK_RATE_HZ);
         taskYIELD();
     }
 }
