@@ -163,11 +163,15 @@ void seg_display_off()
 
 void vDisplayManager()
 {
+    uint num_base        = 10;
     uint16_t rx_data     = 0;
     uint8_t left_digit   = 0;
     uint8_t right_digit  = 0;
     uint8_t display_mode = 0;
     bool hexadecimal     = false;
+    TickType_t duration  = 0;
+    TickType_t start     = 0;
+    TickType_t end       = 0;
 
     xQControl   = xQueueCreate(11, sizeof(uint16_t));
     xQLeftDisp  = xQueueCreate(1, sizeof(uint8_t));
@@ -177,65 +181,85 @@ void vDisplayManager()
 
     while(true) {
         // check if queue is full
-        if (uxQueueSpacesAvailable(xQControl) == 0) {
-            left_digit = seg_display_num[DISP_ZERO];
-            right_digit = seg_display_num[DISP_F];
-        }
-        // receive the data
-        else if (xQueueReceive(xQControl, &rx_data, 0)) {
-            // get the duration time
-            // xQueueReceive(xQControl, &duration, 0) {}
-            // either a number or a stepper motor status
-            // perhaps stepper motor should have msb set
-            // 1000 0000 0000 0000 = clockwise
-            // 1100 0000 0000 0000 = counter clockwise
-            //
-            // rx_data = 98;
-            // left_digit = seg_display_9_digit;
-            // right_digit = seg_display_8_digit;
-            //
-            // 9 = seg_display_9_digit;
-            // left_digit = seg_display_num[seg_display_9_digit];
-            //
-            // left_digit = seg_display_num[rx_data >> 8];
-            // right_digit = seg_display_num[rx_data & 0x00FF];
-            //
-            // separate data into two digits
-            switch (rx_data) {
-                case 0x0E00: // E
-                    left_digit = seg_display_num[DISP_E];
-                    right_digit = left_digit;
-                    break;
-                case 0x1000: // g
-                    hexadecimal = !hexadecimal;
-                    if (hexadecimal) {
-                        left_digit = seg_display_num[DISP_h];
-                        right_digit = left_digit;
-                    }
-                    else {
-                        left_digit = seg_display_num[DISP_d];
-                        right_digit = left_digit;
-                    }
-                case 'M':
-                    break;
-                default:
-                    if (hexadecimal) {
-                        left_digit = seg_display_num[rx_data / 16];
-                        right_digit = seg_display_num[rx_data % 16];
-                    }
-                    else {
-                        left_digit = seg_display_num[rx_data / 10];
-                        right_digit = seg_display_num[rx_data % 10];
-                    }
-                    break;
+        end = xTaskGetTickCount() - start;
+        if (end > duration) {
+            printf("end: %d\n", end);
+            printf("duration: %d\n", duration);
+            left_digit  = 0;
+            right_digit = 0;
+            // BRILLIANT IDEA:
+            // sending duration and then sending the content is TOO ERROR PRONE
+            // top nibble of rx_data = duration
+            // second nibble from top of rx_data = special characters (E, G, M, ...)
+            // bottom byte = data
+            if (uxQueueSpacesAvailable(xQControl) == 0) {
+                left_digit = seg_display_num[DISP_ZERO];
+                right_digit = seg_display_num[DISP_F];
+                duration = 2 * configTICK_RATE_HZ;
+                start = xTaskGetTickCount();
+                end = start;
+                xQueueReceive(xQControl, &rx_data, 1);
+                xQueueReceive(xQControl, &rx_data, 1);
             }
-            printf("rx_data: %d\n", rx_data);
-        }
+            // receive the data
+            else if (xQueueReceive(xQControl, &rx_data, 1)) {
+                // get the duration time
+                xQueueReceive(xQControl, &duration, 1);
+                printf("rx_data: %d\n", rx_data);
+                printf("duration: %d\n", duration);
+                start = xTaskGetTickCount();
+                end = start;
+                // either a number or a stepper motor status
+                // perhaps stepper motor should have msb set
+                // 1000 0000 0000 0000 = clockwise
+                // 1100 0000 0000 0000 = counter clockwise
+                //
+                // rx_data = 98;
+                // left_digit = seg_display_9_digit;
+                // right_digit = seg_display_8_digit;
+                //
+                // 9 = seg_display_9_digit;
+                // left_digit = seg_display_num[seg_display_9_digit];
+                //
+                // left_digit = seg_display_num[rx_data >> 8];
+                // right_digit = seg_display_num[rx_data & 0x00FF];
+                //
+                // separate data into two digits
+                switch (rx_data) {
+                    case 0x0E00: // E
+                        left_digit = seg_display_num[DISP_E];
+                        right_digit = left_digit;
+                        duration = 4 * duration;
+                        break;
+                    case 0x1000: // g
+                        hexadecimal = !hexadecimal;
+                        if (hexadecimal) {
+                            left_digit = seg_display_num[DISP_h];
+                            right_digit = left_digit;
+                            num_base = 16;
+                        }
+                        else {
+                            left_digit = seg_display_num[DISP_d];
+                            right_digit = left_digit;
+                            num_base = 10;
+                        }
+                    case 'M':
+                        break;
+                    default:
+                        left_digit = seg_display_num[rx_data / num_base];
+                        right_digit = seg_display_num[rx_data % num_base];
+                        break;
+                }
+                printf("rx_data: %d\n", rx_data);
+            }
 
-        // send left digit byte to xQLeftDisp
-        xQueueSendToBack(xQLeftDisp, &left_digit, 0);
-        // send right digit byte to xQRightDisp
-        xQueueSendToBack(xQRightDisp, &right_digit, 0);
+            // send left digit byte to xQLeftDisp
+            xQueueSendToBack(xQLeftDisp, &left_digit, 0);
+            // send right digit byte to xQRightDisp
+            xQueueSendToBack(xQRightDisp, &right_digit, 0);
+        }
+        else {
+        }
         taskYIELD();
     }
 }

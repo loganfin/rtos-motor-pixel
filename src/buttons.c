@@ -14,7 +14,7 @@
 const uint buttons_s1_pin = 19;
 const uint buttons_s2_pin = 9;
 const uint buttons_s3_pin = 8;
-const uint buttons_debounce_delay = 160 / portTICK_PERIOD_MS;
+const uint buttons_debounce_delay = 200 / portTICK_PERIOD_MS;
 
 SemaphoreHandle_t xButton1Semaphore;
 SemaphoreHandle_t xButton2Semaphore;
@@ -120,6 +120,7 @@ void vButton1()
                     break;
             }
             xQueueSendToBack(xQControl, &control_queue_message, 0);
+            xQueueSendToBack(xQControl, &input_frame, 0);
             start = 0;
             end = 0;
             count = 0;
@@ -193,6 +194,7 @@ void vButton2()
             end = 0;
             count = 0;
             xQueueSendToBack(xQControl, &control_queue_message, 0);
+            xQueueSendToBack(xQControl, &input_frame, 0);
         }
     }
 }
@@ -263,6 +265,7 @@ void vButton3()
             end = 0;
             count = 0;
             xQueueSendToBack(xQControl, &control_queue_message, 0);
+            xQueueSendToBack(xQControl, &input_frame, 0);
         }
     }
 }
