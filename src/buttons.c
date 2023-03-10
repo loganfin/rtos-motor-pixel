@@ -4,6 +4,7 @@
  */
 #include "buttons.h"
 #include "seg_display.h"
+#include "stepper.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -130,6 +131,7 @@ void vButton2()
     TickType_t start = 0;
     TickType_t end = 0;
     display_packet tx_packet;
+    int tx_data;
     xButton2Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -165,13 +167,16 @@ void vButton2()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    // push 'c' onto xQMotor to move clockwise
+                    // push 'c' onto xQMotor to move counter-clockwise
+                    tx_data = 'c';
                     break;
                 case 2:
                     // push 'C' onto xQMotor to move counter-clockwise
+                    tx_data = 'C';
                     break;
                 case 3:
                     // push 'A' onto xQMotor to alternate between clockwise and counter-clockwise
+                    tx_data = 'A';
                     break;
                 default:
                     break;
@@ -179,7 +184,7 @@ void vButton2()
             start = 0;
             end = 0;
             count = 0;
-            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
+            xQueueSend(xQMotor, &tx_data, 0);
         }
     }
 }

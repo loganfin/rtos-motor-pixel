@@ -1,17 +1,19 @@
 #pragma once
 
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
 #include "pico/stdlib.h"
 
-extern const uint stepper_coil_1_pin;
-extern const uint stepper_coil_2_pin;
-extern const uint stepper_coil_3_pin;
-extern const uint stepper_coil_4_pin;
+extern const uint stepper_clockwise;
 extern const uint stepper_rev_steps;
+
+extern QueueHandle_t xQMotor;
 
 /* Stepper Motor Drivers */
 void stepper_init();
-void stepper_step(uint steps, bool clockwise);
-void stepper_rev(bool clockwise);
+void stepper_step(uint steps, uint direction);
+void stepper_rev(uint clockwise);
 
 /* FreeRTOS Tasks */
 void vMotor();
