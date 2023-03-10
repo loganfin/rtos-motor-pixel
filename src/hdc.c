@@ -1,4 +1,4 @@
-#include "hdc1080.h"
+#include "hdc.h"
 
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
@@ -6,9 +6,9 @@
 const uint hdc_address  = 0x40;
 const uint hdc_temp_reg = 0x00;
 const uint hdc_hmd_reg  = 0x01;
-const uint hdc_cfg_reg  = 0x02;
+const uint hdc_config_reg  = 0x02;
 
-void hdc1080_init()
+void hdc_init()
 {
     i2c_init(PICO_DEFAULT_I2C_INSTANCE, 100 * 1000);
 
