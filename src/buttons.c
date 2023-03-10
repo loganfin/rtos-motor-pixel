@@ -58,10 +58,10 @@ void isr_buttons(uint gpio, uint32_t events)
 void vButton1()
 {
     uint count = 0;
-    TickType_t input_frame = 2 * configTICK_RATE_HZ;
+    TickType_t input_frame = 2000 / portTICK_PERIOD_MS;
     TickType_t start = 0;
     TickType_t end = 0;
-    uint16_t control_queue_message = 0;
+    display_packet tx_packet;
     xButton1Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -98,32 +98,32 @@ void vButton1()
             switch (count) {
                 case 1:
                     printf("case 1 press. actual press %d\n", count);
-                    control_queue_message = 1;
+                    tx_packet.data = 1;
                     break;
                 case 2:
                     printf("case 2 press. actual press %d\n", count);
-                    control_queue_message = 2;
+                    tx_packet.data = 2;
                     break;
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
                     // display "EE"
-                    control_queue_message = 0x0100;
+                    tx_packet.data = 0x0100;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
                     // toggle display between hex and decimal
-                    control_queue_message = 0x0200;
+                    tx_packet.data = 0x0200;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
-                    control_queue_message = 18;
+                    tx_packet.data = 18;
                     break;
             }
-            control_queue_message = control_queue_message | (1 << 12);
-            xQueueSendToBack(xQControl, &control_queue_message, 0);
             start = 0;
             end = 0;
             count = 0;
+            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
+            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }
@@ -131,10 +131,10 @@ void vButton1()
 void vButton2()
 {
     uint count = 0;
-    TickType_t input_frame = 2 * configTICK_RATE_HZ;
+    TickType_t input_frame = 2000 / portTICK_PERIOD_MS;
     TickType_t start = 0;
     TickType_t end = 0;
-    uint16_t control_queue_message = 0;
+    display_packet tx_packet;
     xButton2Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -171,30 +171,30 @@ void vButton2()
             switch (count) {
                 case 1:
                     printf("case 1 press. actual press %d\n", count);
-                    control_queue_message = 10;
+                    tx_packet.data = 10;
                     break;
                 case 2:
                     printf("case 2 press. actual press %d\n", count);
-                    control_queue_message = 20;
+                    tx_packet.data = 20;
                     break;
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
-                    control_queue_message = 30;
+                    tx_packet.data = 30;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
-                    control_queue_message = 40;
+                    tx_packet.data = 40;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
-                    control_queue_message = 50;
+                    tx_packet.data = 50;
                     break;
             }
             start = 0;
             end = 0;
             count = 0;
-            control_queue_message = control_queue_message | (1 << 12);
-            xQueueSendToBack(xQControl, &control_queue_message, 0);
+            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
+            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }
@@ -202,10 +202,10 @@ void vButton2()
 void vButton3()
 {
     uint count = 0;
-    TickType_t input_frame = 2 * configTICK_RATE_HZ;
+    TickType_t input_frame = 2000 / portTICK_PERIOD_MS;
     TickType_t start = 0;
     TickType_t end = 0;
-    uint16_t control_queue_message = 0;
+    display_packet tx_packet;
     xButton3Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -241,31 +241,33 @@ void vButton3()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    printf("case 1 press. actual press %d\n", count);
-                    control_queue_message = 11;
+                    printf("b3: case 1 press. actual press %d\n", count);
+                    tx_packet.data = 11;
+                    printf("tx_packet: %d\n", tx_packet.data);
                     break;
                 case 2:
                     printf("case 2 press. actual press %d\n", count);
-                    control_queue_message = 22;
+                    tx_packet.data = 22;
                     break;
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
-                    control_queue_message = 33;
+                    tx_packet.data = 33;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
-                    control_queue_message = 44;
+                    tx_packet.data = 44;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
-                    control_queue_message = 55;
+                    tx_packet.data = 55;
                     break;
             }
             start = 0;
             end = 0;
             count = 0;
-            control_queue_message = control_queue_message | (1 << 12);
-            xQueueSendToBack(xQControl, &control_queue_message, 0);
+            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
+            printf("duration: %d\n", tx_packet.duration);
+            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }

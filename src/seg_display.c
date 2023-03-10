@@ -164,7 +164,7 @@ void seg_display_off()
 void vDisplayManager()
 {
     uint num_base        = 10;
-    uint16_t rx_data     = 0;
+    display_packet rx_packet;
     uint8_t left_digit   = 0;
     uint8_t right_digit  = 0;
     uint8_t display_mode = 0;
@@ -173,7 +173,7 @@ void vDisplayManager()
     TickType_t start     = 0;
     TickType_t end       = 0;
 
-    xQControl   = xQueueCreate(11, sizeof(uint16_t));
+    xQControl   = xQueueCreate(11, sizeof(display_packet));
     xQLeftDisp  = xQueueCreate(1, sizeof(uint8_t));
     xQRightDisp = xQueueCreate(1, sizeof(uint8_t));
     xSemDisp    = xSemaphoreCreateBinary();
@@ -189,8 +189,8 @@ void vDisplayManager()
             right_digit = 0;
             // BRILLIANT IDEA:
             // sending duration and then sending the content is TOO ERROR PRONE
-            // top nibble of rx_data = duration
-            // second nibble from top of rx_data = special characters (E, G, M, ...)
+            // top nibble of rx_packet = duration
+            // second nibble from top of rx_packet = special characters (E, G, M, ...)
             // bottom byte = data
             if (uxQueueSpacesAvailable(xQControl) == 0) {
                 left_digit = seg_display_num[DISP_ZERO];
@@ -198,17 +198,15 @@ void vDisplayManager()
                 duration = 2 * configTICK_RATE_HZ;
                 start = xTaskGetTickCount();
                 end = start;
-                xQueueReceive(xQControl, &rx_data, 1);
-                xQueueReceive(xQControl, &rx_data, 1);
+                xQueueReceive(xQControl, &rx_packet, 1);
             }
             // receive the data
-            else if (xQueueReceive(xQControl, &rx_data, 1)) {
+            else if (xQueueReceive(xQControl, &rx_packet, 1)) {
                 // get the duration time
                 //xQueueReceive(xQControl, &duration, 1);
-                duration = (rx_data >> 12) * configTICK_RATE_HZ;
-                rx_data &= 0x0fff;
-                printf("rx_data: %d\n", rx_data);
-                printf("duration: %d\n", duration);
+                printf("rx_packet: %d\n", rx_packet.data);
+                printf("duration: %d\n", rx_packet.duration);
+                duration = rx_packet.duration;
                 start = xTaskGetTickCount();
                 end = start;
                 // either a number or a stepper motor status
@@ -216,18 +214,18 @@ void vDisplayManager()
                 // 1000 0000 0000 0000 = clockwise
                 // 1100 0000 0000 0000 = counter clockwise
                 //
-                // rx_data = 98;
+                // rx_packet = 98;
                 // left_digit = seg_display_9_digit;
                 // right_digit = seg_display_8_digit;
                 //
                 // 9 = seg_display_9_digit;
                 // left_digit = seg_display_num[seg_display_9_digit];
                 //
-                // left_digit = seg_display_num[rx_data >> 8];
-                // right_digit = seg_display_num[rx_data & 0x00FF];
+                // left_digit = seg_display_num[rx_packet >> 8];
+                // right_digit = seg_display_num[rx_packet & 0x00FF];
                 //
                 // separate data into two digits
-                switch (rx_data) {
+                switch (rx_packet.data) {
                     case 0x0100: // E
                         left_digit = seg_display_num[DISP_E];
                         right_digit = left_digit;
@@ -248,11 +246,10 @@ void vDisplayManager()
                     case 'M':
                         break;
                     default:
-                        left_digit = seg_display_num[rx_data / num_base];
-                        right_digit = seg_display_num[rx_data % num_base];
+                        left_digit = seg_display_num[rx_packet.data / num_base];
+                        right_digit = seg_display_num[rx_packet.data % num_base];
                         break;
                 }
-                printf("rx_data: %d\n", rx_data);
             }
 
             // send left digit byte to xQLeftDisp
