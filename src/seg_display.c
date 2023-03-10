@@ -183,8 +183,8 @@ void vDisplayManager()
         // check if queue is full
         end = xTaskGetTickCount() - start;
         if (end > duration) {
-            printf("end: %d\n", end);
-            printf("duration: %d\n", duration);
+            //printf("end: %d\n", end);
+            //printf("duration: %d\n", duration);
             left_digit  = 0;
             right_digit = 0;
             // BRILLIANT IDEA:
@@ -204,7 +204,9 @@ void vDisplayManager()
             // receive the data
             else if (xQueueReceive(xQControl, &rx_data, 1)) {
                 // get the duration time
-                xQueueReceive(xQControl, &duration, 1);
+                //xQueueReceive(xQControl, &duration, 1);
+                duration = (rx_data >> 12) * configTICK_RATE_HZ;
+                rx_data &= 0x0fff;
                 printf("rx_data: %d\n", rx_data);
                 printf("duration: %d\n", duration);
                 start = xTaskGetTickCount();
@@ -226,12 +228,12 @@ void vDisplayManager()
                 //
                 // separate data into two digits
                 switch (rx_data) {
-                    case 0x0E00: // E
+                    case 0x0100: // E
                         left_digit = seg_display_num[DISP_E];
                         right_digit = left_digit;
                         duration = 4 * duration;
                         break;
-                    case 0x1000: // g
+                    case 0x0200: // g
                         hexadecimal = !hexadecimal;
                         if (hexadecimal) {
                             left_digit = seg_display_num[DISP_h];

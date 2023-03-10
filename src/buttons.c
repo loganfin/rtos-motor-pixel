@@ -107,20 +107,20 @@ void vButton1()
                 case 3:
                     printf("case 3 press. actual press %d\n", count);
                     // display "EE"
-                    control_queue_message = 0x0E00;
+                    control_queue_message = 0x0100;
                     break;
                 case 4:
                     printf("case 4 press. actual press %d\n", count);
                     // toggle display between hex and decimal
-                    control_queue_message = 0x1000;
+                    control_queue_message = 0x0200;
                     break;
                 default:
                     printf("case default press. actual press %d\n", count);
                     control_queue_message = 18;
                     break;
             }
+            control_queue_message = control_queue_message | (1 << 12);
             xQueueSendToBack(xQControl, &control_queue_message, 0);
-            xQueueSendToBack(xQControl, &input_frame, 0);
             start = 0;
             end = 0;
             count = 0;
@@ -193,8 +193,8 @@ void vButton2()
             start = 0;
             end = 0;
             count = 0;
+            control_queue_message = control_queue_message | (1 << 12);
             xQueueSendToBack(xQControl, &control_queue_message, 0);
-            xQueueSendToBack(xQControl, &input_frame, 0);
         }
     }
 }
@@ -264,8 +264,8 @@ void vButton3()
             start = 0;
             end = 0;
             count = 0;
+            control_queue_message = control_queue_message | (1 << 12);
             xQueueSendToBack(xQControl, &control_queue_message, 0);
-            xQueueSendToBack(xQControl, &input_frame, 0);
         }
     }
 }
