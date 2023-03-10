@@ -97,33 +97,28 @@ void vButton1()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    printf("case 1 press. actual press %d\n", count);
-                    tx_packet.data = 1;
+                    // push 'H' onto xQHDC to tell HDC1080 to read and transmit humidity
                     break;
                 case 2:
-                    printf("case 2 press. actual press %d\n", count);
-                    tx_packet.data = 2;
+                    // push 'M' onot xQMotor to tell motor to move depending on the peeed value in xQControl
                     break;
                 case 3:
-                    printf("case 3 press. actual press %d\n", count);
                     // display "EE"
                     tx_packet.data = 0x0100;
+                    xQueueSendToBack(xQControl, &tx_packet, 0);
                     break;
                 case 4:
-                    printf("case 4 press. actual press %d\n", count);
                     // toggle display between hex and decimal
                     tx_packet.data = 0x0200;
+                    xQueueSendToBack(xQControl, &tx_packet, 0);
                     break;
                 default:
-                    printf("case default press. actual press %d\n", count);
-                    tx_packet.data = 18;
                     break;
             }
             start = 0;
             end = 0;
             count = 0;
             tx_packet.duration = 2000 / portTICK_PERIOD_MS;
-            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }
@@ -170,31 +165,21 @@ void vButton2()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    printf("case 1 press. actual press %d\n", count);
-                    tx_packet.data = 10;
+                    // push 'c' onto xQMotor to move clockwise
                     break;
                 case 2:
-                    printf("case 2 press. actual press %d\n", count);
-                    tx_packet.data = 20;
+                    // push 'C' onto xQMotor to move counter-clockwise
                     break;
                 case 3:
-                    printf("case 3 press. actual press %d\n", count);
-                    tx_packet.data = 30;
-                    break;
-                case 4:
-                    printf("case 4 press. actual press %d\n", count);
-                    tx_packet.data = 40;
+                    // push 'A' onto xQMotor to alternate between clockwise and counter-clockwise
                     break;
                 default:
-                    printf("case default press. actual press %d\n", count);
-                    tx_packet.data = 50;
                     break;
             }
             start = 0;
             end = 0;
             count = 0;
             tx_packet.duration = 2000 / portTICK_PERIOD_MS;
-            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }
@@ -241,33 +226,22 @@ void vButton3()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    printf("b3: case 1 press. actual press %d\n", count);
-                    tx_packet.data = 11;
-                    printf("tx_packet: %d\n", tx_packet.data);
+                    // push 'T' onto xQHDC to tell sensor to transmit temperature
                     break;
                 case 2:
-                    printf("case 2 press. actual press %d\n", count);
-                    tx_packet.data = 22;
+                    // push 'H' onto xQHDC to tell sensor to transmit humidity
                     break;
                 case 3:
-                    printf("case 3 press. actual press %d\n", count);
-                    tx_packet.data = 33;
-                    break;
-                case 4:
-                    printf("case 4 press. actual press %d\n", count);
-                    tx_packet.data = 44;
+                    // push 'T' onto xQMotor to tell motor to transmit status on xQControl
+                    // push 'M' onto xQDispMode to tell vDisplaymanager to show animations
                     break;
                 default:
-                    printf("case default press. actual press %d\n", count);
-                    tx_packet.data = 55;
                     break;
             }
             start = 0;
             end = 0;
             count = 0;
             tx_packet.duration = 2000 / portTICK_PERIOD_MS;
-            printf("duration: %d\n", tx_packet.duration);
-            xQueueSendToBack(xQControl, &tx_packet, 0);
         }
     }
 }

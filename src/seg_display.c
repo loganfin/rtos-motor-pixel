@@ -180,18 +180,12 @@ void vDisplayManager()
     xSemaphoreGive(xSemDisp);
 
     while(true) {
-        // check if queue is full
         end = xTaskGetTickCount() - start;
         if (end > duration) {
-            //printf("end: %d\n", end);
-            //printf("duration: %d\n", duration);
+            // values of 0 mean the display won't turn on
             left_digit  = 0;
             right_digit = 0;
-            // BRILLIANT IDEA:
-            // sending duration and then sending the content is TOO ERROR PRONE
-            // top nibble of rx_packet = duration
-            // second nibble from top of rx_packet = special characters (E, G, M, ...)
-            // bottom byte = data
+            // check if queue is full
             if (uxQueueSpacesAvailable(xQControl) == 0) {
                 left_digit = seg_display_num[DISP_ZERO];
                 right_digit = seg_display_num[DISP_F];
@@ -202,29 +196,11 @@ void vDisplayManager()
             }
             // receive the data
             else if (xQueueReceive(xQControl, &rx_packet, 1)) {
-                // get the duration time
-                //xQueueReceive(xQControl, &duration, 1);
                 printf("rx_packet: %d\n", rx_packet.data);
                 printf("duration: %d\n", rx_packet.duration);
                 duration = rx_packet.duration;
                 start = xTaskGetTickCount();
                 end = start;
-                // either a number or a stepper motor status
-                // perhaps stepper motor should have msb set
-                // 1000 0000 0000 0000 = clockwise
-                // 1100 0000 0000 0000 = counter clockwise
-                //
-                // rx_packet = 98;
-                // left_digit = seg_display_9_digit;
-                // right_digit = seg_display_8_digit;
-                //
-                // 9 = seg_display_9_digit;
-                // left_digit = seg_display_num[seg_display_9_digit];
-                //
-                // left_digit = seg_display_num[rx_packet >> 8];
-                // right_digit = seg_display_num[rx_packet & 0x00FF];
-                //
-                // separate data into two digits
                 switch (rx_packet.data) {
                     case 0x0100: // E
                         left_digit = seg_display_num[DISP_E];
@@ -252,12 +228,8 @@ void vDisplayManager()
                 }
             }
 
-            // send left digit byte to xQLeftDisp
-            xQueueSendToBack(xQLeftDisp, &left_digit, 0);
-            // send right digit byte to xQRightDisp
-            xQueueSendToBack(xQRightDisp, &right_digit, 0);
-        }
-        else {
+            xQueueSend(xQLeftDisp, &left_digit, 0);
+            xQueueSend(xQRightDisp, &right_digit, 0);
         }
         taskYIELD();
     }
