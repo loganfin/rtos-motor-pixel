@@ -3,6 +3,7 @@
  * with the tasks that are triggered by the ISR.
  */
 #include "buttons.h"
+#include "hdc.h"
 #include "seg_display.h"
 #include "stepper.h"
 
@@ -63,6 +64,7 @@ void vButton1()
     TickType_t start = 0;
     TickType_t end = 0;
     display_packet tx_packet;
+    uint tx_data;
     xButton1Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -95,23 +97,30 @@ void vButton1()
         }
 
         // maybe move this above the button handler?
+        tx_packet.duration = 1000 / portTICK_PERIOD_MS;
         if (end > input_frame) {
             switch (count) {
                 case 1:
                     // push 'H' onto xQHDC to tell HDC1080 to read and transmit humidity
+                    // motor should move on humidity
+                    tx_data = 'h';
+                    xQueueSend(xQHDCMotor, &tx_data, 0);
                     break;
                 case 2:
                     // push 'M' onot xQMotor to tell motor to move depending on the peeed value in xQControl
+                    // motor should move on temperature
+                    tx_data = 't';
+                    xQueueSend(xQHDCMotor, &tx_data, 0);
                     break;
                 case 3:
                     // display "EE"
                     tx_packet.data = 0x0100;
-                    xQueueSendToBack(xQControl, &tx_packet, 0);
+                    xQueueSendToFront(xQControl, &tx_packet, 0);
                     break;
                 case 4:
                     // toggle display between hex and decimal
                     tx_packet.data = 0x0200;
-                    xQueueSendToBack(xQControl, &tx_packet, 0);
+                    xQueueSendToFront(xQControl, &tx_packet, 0);
                     break;
                 default:
                     break;
@@ -119,7 +128,6 @@ void vButton1()
             start = 0;
             end = 0;
             count = 0;
-            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
         }
     }
 }
@@ -167,12 +175,12 @@ void vButton2()
         if (end > input_frame) {
             switch (count) {
                 case 1:
-                    // push 'c' onto xQMotor to move counter-clockwise
-                    tx_data = 'c';
+                    // push 1 onto xQMotor to move counter-clockwise
+                    tx_data = 1;
                     break;
                 case 2:
-                    // push 'C' onto xQMotor to move counter-clockwise
-                    tx_data = 'C';
+                    // push -1 onto xQMotor to move counter-clockwise
+                    tx_data = -1;
                     break;
                 case 3:
                     // push 'A' onto xQMotor to alternate between clockwise and counter-clockwise
@@ -184,6 +192,7 @@ void vButton2()
             start = 0;
             end = 0;
             count = 0;
+            xQueueSend(xQHDCMotor, &count, 0);
             xQueueSend(xQMotor, &tx_data, 0);
         }
     }
@@ -196,6 +205,7 @@ void vButton3()
     TickType_t start = 0;
     TickType_t end = 0;
     display_packet tx_packet;
+    uint tx_data;
     xButton3Semaphore = xSemaphoreCreateBinary();
 
     while(true) {
@@ -232,13 +242,27 @@ void vButton3()
             switch (count) {
                 case 1:
                     // push 'T' onto xQHDC to tell sensor to transmit temperature
+                    // display temperature
+                    tx_data = 'S';
+                    xQueueSend(xQMotor, &tx_data, 0);
+                    tx_data = 'T';
+                    xQueueSend(xQHDC, &tx_data, 0);
                     break;
                 case 2:
                     // push 'H' onto xQHDC to tell sensor to transmit humidity
+                    // display humidity
+                    tx_data = 'S';
+                    xQueueSend(xQMotor, &tx_data, 0);
+                    tx_data = 'H';
+                    xQueueSend(xQHDC, &tx_data, 0);
                     break;
                 case 3:
                     // push 'T' onto xQMotor to tell motor to transmit status on xQControl
                     // push 'M' onto xQDispMode to tell vDisplaymanager to show animations
+                    tx_data = 'S';
+                    xQueueSend(xQHDC, &tx_data, 0);
+                    tx_data = 'M';
+                    xQueueSend(xQMotor, &tx_data, 0);
                     break;
                 default:
                     break;
@@ -246,7 +270,6 @@ void vButton3()
             start = 0;
             end = 0;
             count = 0;
-            tx_packet.duration = 2000 / portTICK_PERIOD_MS;
         }
     }
 }

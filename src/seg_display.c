@@ -173,10 +173,6 @@ void vDisplayManager()
     TickType_t start     = 0;
     TickType_t end       = 0;
 
-    xQControl   = xQueueCreate(11, sizeof(display_packet));
-    xQLeftDisp  = xQueueCreate(1, sizeof(uint8_t));
-    xQRightDisp = xQueueCreate(1, sizeof(uint8_t));
-    xSemDisp    = xSemaphoreCreateBinary();
     xSemaphoreGive(xSemDisp);
 
     while(true) {
@@ -189,15 +185,13 @@ void vDisplayManager()
             if (uxQueueSpacesAvailable(xQControl) == 0) {
                 left_digit = seg_display_num[DISP_ZERO];
                 right_digit = seg_display_num[DISP_F];
-                duration = 2 * configTICK_RATE_HZ;
+                duration = 2000 / portTICK_PERIOD_MS;
                 start = xTaskGetTickCount();
                 end = start;
-                xQueueReceive(xQControl, &rx_packet, 1);
+                xQueueReset(xQControl);
             }
             // receive the data
             else if (xQueueReceive(xQControl, &rx_packet, 1)) {
-                printf("rx_packet: %d\n", rx_packet.data);
-                printf("duration: %d\n", rx_packet.duration);
                 duration = rx_packet.duration;
                 start = xTaskGetTickCount();
                 end = start;
@@ -205,7 +199,6 @@ void vDisplayManager()
                     case 0x0100: // E
                         left_digit = seg_display_num[DISP_E];
                         right_digit = left_digit;
-                        duration = 4 * duration;
                         break;
                     case 0x0200: // g
                         hexadecimal = !hexadecimal;
@@ -219,7 +212,10 @@ void vDisplayManager()
                             right_digit = left_digit;
                             num_base = 10;
                         }
-                    case 'M':
+                        break;
+                    case 0x0300:
+                        left_digit = 0;
+                        right_digit = 0;
                         break;
                     default:
                         left_digit = seg_display_num[rx_packet.data / num_base];
@@ -245,8 +241,6 @@ void vLeftDisplay()
             seg_display_digit(seg_display_left, digit);
             xSemaphoreGive(xSemDisp);
         }
-        //printf("Left\n");
-        //vTaskDelay(1 * configTICK_RATE_HZ);
         taskYIELD();
     }
 }
@@ -261,8 +255,6 @@ void vRightDisplay()
             seg_display_digit(seg_display_right, digit);
             xSemaphoreGive(xSemDisp);
         }
-        //printf("Right\n");
-        //vTaskDelay(1 * configTICK_RATE_HZ);
         taskYIELD();
     }
 }

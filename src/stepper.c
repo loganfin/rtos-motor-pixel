@@ -3,6 +3,7 @@
  */
 
 #include "stepper.h"
+#include "seg_display.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
@@ -18,6 +19,7 @@ const uint stepper_rev_steps  = 524;    // approximate
 const uint stepper_clockwise          = 1;
 
 QueueHandle_t xQMotor;
+QueueHandle_t xQMotorData;
 
 /* Stepper Motor Drivers */
 // initialize all of the necessary pins
@@ -81,34 +83,88 @@ void stepper_step(uint steps, uint direction)
     }
 }
 
-// spin the motor one full revolution in either direction
-void stepper_rev(uint direction)
-{
-    stepper_step(stepper_rev_steps, stepper_clockwise);
-}
-
 /* FreeRTOS Tasks */
 void vMotor()
 {
-    int rx_data;
-    uint direction;
+    int rx_data = 0;
+    int last_status;
+    uint direction = stepper_clockwise;
+    uint step_count = 0;
+    int addend = 1;
+    bool send_status = false;
+    display_packet status_packet;
+    TickType_t end = 0;
+
+    status_packet.duration = 100;
     xQMotor = xQueueCreate(1, sizeof(int));
 
     while(true) {
-        xQueueReceive(xQMotor, &rx_data, 0);
+        xQueueReceive(xQMotor, &rx_data, 1);
+        if (last_status != rx_data && send_status == true) {
+            xQueueReset(xQControl);
+            printf("queue cleared 1\n");
+            printf("last status: %d\n", last_status);
+            printf("rx_data: %d\n", rx_data);
+        }
+
         switch (rx_data) {
-            case 'c':
-                stepper_step(1, stepper_clockwise);
+            case 0:
+                last_status = rx_data;
+                status_packet.data = 0x0300;
                 break;
-            case 'C':
+            case 1:
+                stepper_step(1, stepper_clockwise);
+                last_status = rx_data;
+                status_packet.data = stepper_clockwise;
+                break;
+            case -1:
                 stepper_step(1, !stepper_clockwise);
+                last_status = rx_data;
+                status_packet.data = !stepper_clockwise;
                 break;
             case 'A':
-                stepper_rev(true);
-                stepper_rev(false);
+                last_status = rx_data;
+                if (step_count == 0) {
+                    addend = 1;
+                    if (send_status == true) {
+                        xQueueReset(xQControl);
+                        printf("queue cleared 2\n");
+                    }
+                }
+                else if (step_count == stepper_rev_steps) {
+                    addend = -1;
+                    if (send_status == true) {
+                        xQueueReset(xQControl);
+                        printf("queue cleared 3\n");
+                    }
+                }
+                step_count += addend;
+
+                if (addend == 1) {
+                    stepper_step(1, stepper_clockwise);
+                    status_packet.data = stepper_clockwise;
+                }
+                else if (addend == -1) {
+                    stepper_step(1, !stepper_clockwise);
+                    status_packet.data = !stepper_clockwise;
+                }
+                break;
+            case 'M':
+                rx_data = last_status;
+                send_status = true;
+                break;
+            case 'S':
+                rx_data = last_status;
+                send_status = false;
                 break;
             default:
+                taskYIELD();
                 break;
+        }
+        if (send_status == true && xTaskGetTickCount() > end) {
+            end = xTaskGetTickCount() + (600 / portTICK_PERIOD_MS);
+            printf("sending %d\n", status_packet.data);
+            xQueueSend(xQControl, &status_packet, 0);
         }
     }
 }

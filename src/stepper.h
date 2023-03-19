@@ -9,6 +9,7 @@ extern const uint stepper_clockwise;
 extern const uint stepper_rev_steps;
 
 extern QueueHandle_t xQMotor;
+extern QueueHandle_t xQMotorData;
 
 /* Stepper Motor Drivers */
 void stepper_init();
