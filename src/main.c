@@ -1,12 +1,13 @@
 #include "buttons.h"
 #include "hdc.h"
+#include "pixel.h"
 #include "seg_display.h"
 #include "stepper.h"
 
 #include <FreeRTOS.h>
 #include <task.h>
-#include <stdio.h>
 #include "pico/stdlib.h"
+#include <stdio.h>
 
 int main()
 {
@@ -32,6 +33,7 @@ int main()
     xTaskCreate(vDisplayManager, "DisplayManagerTask", 256, NULL, 3, NULL);
     xTaskCreate(vLeftDisplay, "LeftDisplayTask", 256, NULL, 3, NULL);
     xTaskCreate(vRightDisplay, "RightDisplayTask", 256, NULL, 3, NULL);
+    xTaskCreate(vPixel, "PixelTask", 256, NULL, 3, NULL);
     vTaskStartScheduler();
 
     while (true) {
