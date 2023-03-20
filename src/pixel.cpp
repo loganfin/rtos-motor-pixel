@@ -23,9 +23,20 @@ const uint pixel_rainbow[7] = {
     0x00010100, // violet
 };
 
+enum pixel_rainbow_frames {
+    PIXEL_RED    = 0,
+    PIXEL_ORANGE = 1,
+    PIXEL_YELLOW = 2,
+    PIXEL_GREEN  = 3,
+    PIXEL_BLUE   = 4,
+    PIXEL_INDIGO = 5,
+    PIXEL_VIOLET = 6,
+    PIXEL_MAX    = 7,
+};
+
 void vPixel(void* parameters)
 {
-    uint color = 0;
+    uint color = PIXEL_RED;
     int8_t dir = 0;
     uint8_t start = 0;
     uint8_t end = 0;
@@ -44,8 +55,8 @@ void vPixel(void* parameters)
                     if (i == pixel_strip_length - 1) {
                         color = pixel_rainbow[index];
                         index++;
-                        if (index > 6) {
-                            index = 0;
+                        if (index == PIXEL_MAX) {
+                            index = PIXEL_RED;
                         }
                         ledStrip.setPixelColor(0, color);
                     }
