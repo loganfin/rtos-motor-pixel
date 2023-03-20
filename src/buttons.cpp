@@ -4,6 +4,7 @@
  */
 #include "buttons.h"
 #include "hdc.h"
+#include "pixel.h"
 #include "seg_display.h"
 #include "stepper.h"
 
@@ -122,6 +123,11 @@ void vButton1(void* parameters)
                     tx_packet.data = 0x0200;
                     xQueueSendToFront(xQControl, &tx_packet, 0);
                     break;
+                case 5:
+                    // display rainbow animation on the pixel display
+                    tx_data = 'R';
+                    xQueueSend(xQPixel, &tx_data, 0);
+                    break;
                 default:
                     break;
             }
@@ -185,6 +191,11 @@ void vButton2(void* parameters)
                 case 3:
                     // push 'A' onto xQMotor to alternate between clockwise and counter-clockwise
                     tx_data = 'A';
+                    break;
+                case 4:
+                    // display unique colors on each pixel led
+                    tx_data = 'I';
+                    xQueueSend(xQPixel, &tx_data, 0);
                     break;
                 default:
                     break;
@@ -263,6 +274,11 @@ void vButton3(void* parameters)
                     xQueueSend(xQHDC, &tx_data, 0);
                     tx_data = 'M';
                     xQueueSend(xQMotor, &tx_data, 0);
+                    break;
+                case 4:
+                    // display the change in value of the control queue
+                    tx_data = 'M';
+                    xQueueSend(xQPixel, &tx_data, 0);
                     break;
                 default:
                     break;

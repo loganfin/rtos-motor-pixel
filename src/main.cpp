@@ -23,6 +23,7 @@ int main()
     xQControl   = xQueueCreate(11, sizeof(display_packet));
     xQLeftDisp  = xQueueCreate(1, sizeof(uint8_t));
     xQRightDisp = xQueueCreate(1, sizeof(uint8_t));
+    xQPixel = xQueueCreate(1, sizeof(uint));
     xSemDisp    = xSemaphoreCreateBinary();
 
     xTaskCreate(vMotor, "MotorTask", 256, NULL, 3, NULL);
