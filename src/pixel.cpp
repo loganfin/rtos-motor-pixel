@@ -13,6 +13,16 @@ const uint pixel_strip_length = 4;
 
 QueueHandle_t xQPixel;
 
+const uint pixel_rainbow[7] = {
+    0x00000100, // red
+    0x01000301, // orange
+    0x01000101, // yellow
+    0x01000001, // green
+    0x00010000, // blue
+    0x00020100, // indigo
+    0x00010100, // violet
+};
+
 void vPixel(void* parameters)
 {
     uint color = 0;
@@ -29,15 +39,24 @@ void vPixel(void* parameters)
         xQueueReceive(xQPixel, &rx_data, 0);
         switch (rx_data) {
             case 'R':
-                printf("print rainbow\n");
-                vTaskDelay(50 / portTICK_PERIOD_MS);
+                for (int i = 1; i < pixel_strip_length; i++) {
+                    ledStrip.setPixelColor(i, color);
+                    if (i == pixel_strip_length - 1) {
+                        color = pixel_rainbow[index];
+                        index++;
+                        if (index > 6) {
+                            index = 0;
+                        }
+                        ledStrip.setPixelColor(0, color);
+                    }
+                    ledStrip.show();
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
+                }
                 break;
             case 'I':
-                printf("print individual colors\n");
                 vTaskDelay(50 / portTICK_PERIOD_MS);
                 break;
             case 'M':
-                printf("print status of motor\n");
                 vTaskDelay(50 / portTICK_PERIOD_MS);
                 break;
             default:
