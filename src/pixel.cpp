@@ -65,6 +65,11 @@ void vPixel(void* parameters)
                 }
                 break;
             case 'I':
+                ledStrip.setPixelColor(0, pixel_rainbow[PIXEL_RED]);
+                ledStrip.setPixelColor(1, pixel_rainbow[PIXEL_YELLOW]);
+                ledStrip.setPixelColor(2, pixel_rainbow[PIXEL_GREEN]);
+                ledStrip.setPixelColor(3, pixel_rainbow[PIXEL_VIOLET]);
+                ledStrip.show();
                 vTaskDelay(50 / portTICK_PERIOD_MS);
                 break;
             case 'M':
