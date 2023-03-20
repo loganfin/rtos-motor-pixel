@@ -4,7 +4,7 @@ An extension of my rtos-motor project that adds WS2812 LED logic.
 
 ## Building
 
-This program depends on the pico-sdk and the FreeRTOS-Kernel
+This program depends on Pico_WS2812, pico-sdk and FreeRTOS-Kernel.
 
 1. Clone the repository:
 
