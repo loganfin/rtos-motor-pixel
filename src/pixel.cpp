@@ -1,4 +1,5 @@
 #include "pixel.h"
+#include "seg_display.h"
 
 #include "WS2812.hpp"
 #include <FreeRTOS.h>
@@ -42,6 +43,8 @@ void vPixel(void* parameters)
     uint8_t end = 0;
     uint index = 0;
     uint rx_data = 0;
+    uint new_control_data = 0;
+    uint old_control_data = 0;
 
     WS2812 ledStrip(pixel_led_pin, pixel_strip_length,
             pio0, 0, WS2812::FORMAT_WRGB);
@@ -73,7 +76,33 @@ void vPixel(void* parameters)
                 vTaskDelay(50 / portTICK_PERIOD_MS);
                 break;
             case 'M':
-                vTaskDelay(50 / portTICK_PERIOD_MS);
+                xQueuePeek(xQControl, &new_control_data, 0);
+                if (new_control_data < old_control_data) {
+                    for (int i = 0; i < pixel_strip_length; i++) {
+                        ledStrip.setPixelColor(i, pixel_rainbow[PIXEL_VIOLET]);
+                        if (i > 0) {
+                            ledStrip.setPixelColor(i - 1, 0);
+                        }
+                        ledStrip.show();
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                } else if (new_control_data > old_control_data) {
+                    for (int i = pixel_strip_length - 1; i > -1; i--) {
+                        ledStrip.setPixelColor(i, pixel_rainbow[PIXEL_VIOLET]);
+                        if (i < pixel_strip_length - 1) {
+                            ledStrip.setPixelColor(i + 1, 0);
+                        }
+                        ledStrip.show();
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                } else {
+                    for (int i = 0; i < pixel_strip_length; i++) {
+                        ledStrip.setPixelColor(i, 0);
+                        ledStrip.show();
+                    }
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+                old_control_data = new_control_data;
                 break;
             default:
                 break;
