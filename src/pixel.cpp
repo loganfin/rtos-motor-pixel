@@ -5,7 +5,7 @@
 #include "pico/stdlib.h"
 #include <stdio.h>
 
-void vPixel()
+void vPixel(void* parameters)
 {
     while (true) {
         vTaskDelay(100);

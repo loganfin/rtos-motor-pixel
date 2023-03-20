@@ -57,7 +57,7 @@ void isr_buttons(uint gpio, uint32_t events)
 }
 
 /* FreeRTOS Tasks */
-void vButton1()
+void vButton1(void* parameters)
 {
     uint count = 0;
     TickType_t input_frame = 2000 / portTICK_PERIOD_MS;
@@ -132,7 +132,7 @@ void vButton1()
     }
 }
 
-void vButton2()
+void vButton2(void* parameters)
 {
     uint count = 0;
     TickType_t input_frame = 2000 / portTICK_PERIOD_MS;
@@ -198,7 +198,7 @@ void vButton2()
     }
 }
 
-void vButton3()
+void vButton3(void* parameters)
 {
     uint count = 0;
     TickType_t input_frame = 2000 / portTICK_PERIOD_MS;

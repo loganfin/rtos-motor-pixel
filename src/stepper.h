@@ -17,4 +17,4 @@ void stepper_step(uint steps, uint direction);
 void stepper_rev(uint clockwise);
 
 /* FreeRTOS Tasks */
-void vMotor();
+void vMotor(void* parameters);

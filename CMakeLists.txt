@@ -25,7 +25,7 @@ else()
     endif()
 endif()
 
-project(motor LANGUAGES C CXX ASM)
+project(motor-pixel LANGUAGES C CXX ASM)
 
 pico_sdk_init()
 
@@ -66,12 +66,12 @@ target_include_directories(freertos PUBLIC
     )
 
 add_executable(${CMAKE_PROJECT_NAME}
-    src/main.c
-    src/buttons.c
-    src/hdc.c
-    src/pixel.c
-    src/seg_display.c
-    src/stepper.c
+    src/main.cpp
+    src/buttons.cpp
+    src/hdc.cpp
+    src/pixel.cpp
+    src/seg_display.cpp
+    src/stepper.cpp
     )
 
 pico_enable_stdio_usb(${CMAKE_PROJECT_NAME} 1)

@@ -161,7 +161,7 @@ void seg_display_off()
 
 /* FreeRTOS Tasks */
 
-void vDisplayManager()
+void vDisplayManager(void* parameters)
 {
     uint num_base        = 10;
     display_packet rx_packet;
@@ -231,7 +231,7 @@ void vDisplayManager()
     }
 }
 
-void vLeftDisplay()
+void vLeftDisplay(void* parameters)
 {
     uint8_t digit = 0;
 
@@ -245,7 +245,7 @@ void vLeftDisplay()
     }
 }
 
-void vRightDisplay()
+void vRightDisplay(void* parameters)
 {
     uint8_t digit = 0;
 

@@ -11,7 +11,7 @@ void buttons_init();
 void isr_buttons(uint gpio, uint32_t events);
 
 /* FreeRTOS Tasks */
-void vButton1();
-void vButton2();
-void vButton3();
+void vButton1(void* parameters);
+void vButton2(void* parameters);
+void vButton3(void* parameters);
 

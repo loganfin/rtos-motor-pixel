@@ -84,7 +84,7 @@ void stepper_step(uint steps, uint direction)
 }
 
 /* FreeRTOS Tasks */
-void vMotor()
+void vMotor(void* parameters)
 {
     int rx_data = 0;
     int last_status;

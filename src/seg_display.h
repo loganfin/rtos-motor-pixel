@@ -25,6 +25,6 @@ void seg_display_digit(uint display, uint8_t digit);
 void seg_display_off();
 
 /* FreeRTOS Tasks */
-void vDisplayManager();
-void vLeftDisplay();
-void vRightDisplay();
+void vDisplayManager(void* parameters);
+void vLeftDisplay(void* parameters);
+void vRightDisplay(void* parameters);

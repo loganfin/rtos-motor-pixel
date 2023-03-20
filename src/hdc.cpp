@@ -86,7 +86,7 @@ float hdc_humidity()
     return percentHumid;
 }
 
-void vHDC()
+void vHDC(void* parameters)
 {
     uint rx_data = 0;
     uint motor_data = 0;

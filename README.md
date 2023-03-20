@@ -1,5 +1,6 @@
-# rtos-motor
-Experimenting with buttons via hardware interrupts, sensors via i2c, and motors in FreeRTOS on the rp2040-based Pico Feather
+# rtos-motor-pixel
+
+An extension of my rtos-motor project that adds WS2812 LED logic.
 
 ## Building
 
@@ -8,7 +9,7 @@ This program depends on the pico-sdk and the FreeRTOS-Kernel
 1. Clone the repository:
 
     ```
-    git clone https://github.com/loganfin/rtos-motor.git
+    git clone https://github.com/loganfin/rtos-motor-pixel.git
     ```
 
 2. Configure the build directory using CMake:

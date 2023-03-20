@@ -10,4 +10,4 @@ extern QueueHandle_t xQHDCMotor;
 
 void hdc_init();
 
-void vHDC();
+void vHDC(void* parameters);
